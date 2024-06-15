@@ -25,6 +25,7 @@ impl Config {
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   let contents = fs::read_to_string(config.file_path)?;
   
+  // using hashmap instead of vector to record the query word in which line
   let results = if config.ignore_case {
     search_insentitve(&config.query, &contents)
   } else {
@@ -39,7 +40,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> HashMap<i32, &'a str> { 
-  // let mut results = Vec::new();
   let mut results = HashMap::new();
   let mut line_no = 0;
 
@@ -55,7 +55,6 @@ pub fn search<'a>(query: &str, contents: &'a str) -> HashMap<i32, &'a str> {
 
 pub fn search_insentitve<'a>(query: &str, contents: &'a str) -> HashMap<i32, &'a str> {
   let query = query.to_lowercase();
-  // let mut results = Vec::new();
   let mut results = HashMap::new();
   let mut line_no = 0;
 
@@ -69,6 +68,7 @@ pub fn search_insentitve<'a>(query: &str, contents: &'a str) -> HashMap<i32, &'a
   results
 }
 
+// hashmap init marco, like vec!
 macro_rules! hashmap {
   ($( $key: expr => $val: expr ),*) => {{
        let mut map = ::std::collections::HashMap::new();
