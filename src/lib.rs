@@ -1,30 +1,37 @@
 use std::collections::HashMap;
 use std::{error::Error, fs};
-use std::env;
+use clap::Parser;
 
 pub struct Config {
   pub query: String,
-  pub file_path: String,
+  pub files: String,
   pub ignore_case: bool,
 }
 
+#[derive(Parser)]
+#[command(version, author, about)]
+pub struct Cli {
+  query: String,
+  files: String,
+
+  #[arg(short, long)]
+  ignore_case: bool,
+}
+
 impl Config {
-  pub fn build(args: &[String]) -> Result<Config, &'static str> {
-    if args.len() < 3 {
-      return  Err("not enough arguments");
-    }
-
-    let query = args[1].clone();
-    let file_path = args[2].clone();
-    let ignore_case = env::var("IGNORE_CASE").is_ok();
-
-    Ok(Config{query, file_path, ignore_case})
+  pub fn build() -> Result<Config, &'static str> {
+    let cli = Cli::parse();
+    let query = cli.query.clone();
+    let files = cli.files.clone();
+    let ignore_case = cli.ignore_case.clone();
+    Ok(Config{query, files, ignore_case})
   }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-  let contents = fs::read_to_string(config.file_path)?;
-  
+  let contents = fs::read_to_string(&config.files)?;
+  let f = config.files;
+
   // using hashmap instead of vector to record the query word in which line
   let results = if config.ignore_case {
     search_insentitve(&config.query, &contents)
@@ -33,7 +40,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
   };
 
   for (line_no, line) in results.iter() {
-    println!("in line {line_no} : {line}");
+    println!("In file {f}, line {line_no} : {line}");
   }
   
   Ok(())
